@@ -1,0 +1,18 @@
+#!/bin/sh 
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run this script as root"
+  exit
+fi
+
+# Remove orphan packages
+pacman -Rs $(pacman -Qdtq) --noconfirm
+
+# Remove pacman cache but keep last 3 versions
+paccache -rvk3
+
+# Clear all syslogs that are older than 4 weeks
+journalctl --vacuum-time=4weeks
+
+# Clear all cache in the home folder that has not been accessed in a 100 days
+find /home/*/.cache/ -type f -atime +100 -delete
